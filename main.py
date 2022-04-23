@@ -1,19 +1,24 @@
 from bs4 import BeautifulSoup
 from datetime import date
 import requests
+import re
 
 URL_FORMAT = "https://www.nytimes.com/{}/crosswords/spelling-bee-forum.html"
 
 class Grid:
-    def __init__(self, header, letter_to_values):
+    def __init__(self, header, letter_to_values, two_letters_to_value):
         self.header = header
         self.letter_to_values = letter_to_values
+        self.two_letters_to_value = two_letters_to_value
 
     def __str__(self):
         output = ' \t' + '\t'.join(self.header) + '\n'
         for letter, values in self.letter_to_values.items():
             values = [str(v) for v in values]
             output += letter + '\t' + '\t'.join(values) + '\n'
+
+        for two_letters, value in two_letters_to_value.items():
+            output += f'{two_letters}-{value}\n'
         return output
 
 if __name__ == '__main__':
@@ -47,5 +52,13 @@ if __name__ == '__main__':
 
         next_letter = values[-1][-1]
 
-    grid = Grid(header, letter_to_values)
+    two_letter_list = soup.body.find(text="Two letter list:").parent.parent.next_sibling.text
+    two_letter_list_regex = re.compile('[A-Z]{2}-[0-9]{1,2}')
+
+    two_letters_to_value = dict()
+    for m in two_letter_list_regex.findall(two_letter_list):
+        two_letters, value = m.split('-')
+        two_letters_to_value[two_letters] = value
+
+    grid = Grid(header, letter_to_values, two_letters_to_value)
     print(grid)
