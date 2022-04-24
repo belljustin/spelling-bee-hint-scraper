@@ -11,6 +11,8 @@ class Grid:
         self.letter_to_values = letter_to_values
         self.two_letters_to_value = two_letters_to_value
 
+        self.guessed_words = set()
+
     def __str__(self):
         output = ' \t' + '\t'.join(self.header) + '\n'
         for letter, values in self.letter_to_values.items():
@@ -20,6 +22,25 @@ class Grid:
         for two_letters, value in two_letters_to_value.items():
             output += f'{two_letters}-{value}\n'
         return output
+
+    def word(self, w):
+        w = w.upper()
+
+        if w in self.guessed_words:
+            raise Exception("already guessed")
+
+        if w[0] not in self.letter_to_values:
+            raise Exception("not a valid starting letter")
+
+        header_int = [int(h) for h in self.header]
+        if len(w) not in header_int:
+            raise Exception("word length not a valid choice")
+
+        i = header_int.index(len(w))
+        self.letter_to_values[w[0]][i] -= 1
+        self.two_letters_to_value[w[:2]] -= 1
+
+        self.guessed_words.add(w)
 
 if __name__ == '__main__':
     today = date.today()
@@ -51,8 +72,16 @@ if __name__ == '__main__':
     two_letters_to_value = dict()
     for m in two_letter_list_regex.findall(two_letter_list):
         two_letters, value = m.split('-')
-        two_letters_to_value[two_letters] = value
+        two_letters_to_value[two_letters] = int(value)
 
 	# build grid
     grid = Grid(header, letter_to_values, two_letters_to_value)
     print(grid)
+
+    while True:
+        word = input("Next word: ")
+        try:
+            grid.word(word)
+            print(grid)
+        except Exception as e:
+            print(e)
