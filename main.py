@@ -62,8 +62,8 @@ if __name__ == '__main__':
     rows_regex = re.compile('[A-Z]:(?: +[0-9\-]{1,2})*')
     for row in rows_regex.findall(raw_rows):
         letter = row[0]
-        values = list(filter(lambda x: x, row[2:].split(' ')))
-        letter_to_values[letter] = [0 if v == '-' else int(v) for v in values]
+        values = filter(lambda x: x, row[2:].split(' '))
+        letter_to_values[letter] = [0 if v == '-' else int(v) for v in values][:-1]
 
 	# two letter list
     two_letter_list = soup.body.find(text="Two letter list:").parent.parent.next_sibling.text
